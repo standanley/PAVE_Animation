@@ -25,6 +25,7 @@ public:
 	float dist_LL = 5;
 	float dist_MM = 10;
 	float dist_RR = 20;
+	float dashSpeed;
 
 	// w and h are the width and height of the viewport used
 	Road(SDL_Renderer *renderer, int w, int h);

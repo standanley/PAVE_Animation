@@ -57,9 +57,8 @@ void Road::updateRect(){
 }
 
 void Road::tick(){
-	float DASH_SPEED = 5.0;
 	Road::updateRect();
-	Road::dashOffset = fmodf(Road::dashOffset + DASH_SPEED + dash.h * 2, dash.h * 2) - dash.h * 2;
+	Road::dashOffset = fmodf(Road::dashOffset + dashSpeed*.1 + dash.h * 2, dash.h * 2) - dash.h * 2;
 }
 
 void Road::drawDashes(SDL_Renderer *renderer, int x){

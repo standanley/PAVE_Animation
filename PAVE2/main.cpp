@@ -61,7 +61,7 @@ void RunGame()
 		getInput();
 		tick();
 		render();
-		SDL_Delay(160);
+		SDL_Delay(16);
 	}
 }
 bool checkEvents(){
@@ -77,8 +77,9 @@ bool checkEvents(){
 void getInput(){
 	//Todo
 
-
-	
+	if (rand() % 10 >= 1){
+		return;
+	}
 
 	float test;
 	float test2;
@@ -93,7 +94,7 @@ void getInput(){
 		source >> road->dist_RR;
 	}
 
-	if (testImage != NULL){
+	if (testImage != NULL && testImageCounter != 34){
 		SDL_DestroyTexture(testImage);
 	}
 
@@ -116,6 +117,8 @@ void getInput(){
 void tick(){
 	road->tick();
 	//gauges->wheelAngle++;
+	gauges->speed+=.05;
+	road->dashSpeed = gauges->speed;
 }
 
 void render()
@@ -125,11 +128,14 @@ void render()
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 
+	/*
+	//How to draw text
 	SDL_Rect temp = { 90, 490, 300, 48 };
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &temp);
 	char* text = "-123.45:6\0";
 	Text_renderText(renderer, text, 100, 500);
+	*/
 
 
 	SDL_RenderSetViewport(renderer, &roadViewport);
