@@ -2,9 +2,10 @@
 #include <iostream>
 #include <vector>
 #include "Road.h"
+#include "Text.h"
 #include <fstream>
 #include <stdlib.h>
-#include <string>
+
 using namespace std;
 
 bool checkEvents();
@@ -57,7 +58,7 @@ void RunGame()
 		getInput();
 		tick();
 		render();
-		SDL_Delay(16);
+		SDL_Delay(160);
 	}
 }
 bool checkEvents(){
@@ -73,9 +74,13 @@ bool checkEvents(){
 void getInput(){
 	//Todo
 
-	if (rand() % 10 >= 1){
+
+	source.open("data.txt", ios_base::in);  // open data
+	if (!source)  {                     // if it does not work
+		cerr << "Can't open Data!\n";
 		return;
 	}
+
 	float test;
 	float test2;
 	if (!source.eof()){
@@ -87,18 +92,9 @@ void getInput(){
 		source >> road->dist_LL;
 		source >> road->dist_MM;
 		source >> road->dist_RR;
-	}else{
-		
-		road->angle = 0;
-		road->toMarking_LL = 0;
-		road->toMarking_ML = 0;
-		road->toMarking_MR = 0;
-		road->toMarking_RR = 0;
-		road->dist_LL = 0;
-		road->dist_MM = 0;
-		road->dist_RR = 0;
-		
 	}
+
+	source.close();
 
 	if (testImage != NULL){
 		SDL_DestroyTexture(testImage);
@@ -131,12 +127,18 @@ void render()
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 
+	SDL_Rect temp = { 90, 490, 300, 48 };
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+	SDL_RenderFillRect(renderer, &temp);
+	char* text = "-123.45:6\0";
+	Text_renderText(renderer, text, 100, 500);
+
 
 	SDL_RenderSetViewport(renderer, &roadViewport);
 	road->draw(renderer);
 
 
-	SDL_Rect tempViewport = { 20, 20, 400, 400 };
+	SDL_Rect tempViewport = { 0, 0, 280*2, 210*2 };
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
 
@@ -159,15 +161,9 @@ bool InitEverything()
 	SetupRenderer();
 
 	road = new Road(renderer, 300, 720);
-	//roadViewport = { 100, 0, 300, 720 };
 	roadViewport = { 980, 0, 300, 720 };
 
-	source.open("data.txt", ios_base::in);  // open data
-	if (!source)  {                     // if it does not work
-		cerr << "Can't open Data!\n";
-		return false;
-	}
-
+	Text_init(renderer);
 	
 
 	return true;
