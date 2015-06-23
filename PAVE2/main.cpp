@@ -3,6 +3,7 @@
 #include <vector>
 #include "Road.h"
 #include "Text.h"
+#include "Gauges.h"
 #include <fstream>
 #include <stdlib.h>
 
@@ -35,8 +36,10 @@ SDL_Renderer* renderer;
 SDL_Texture *testImage;
 int testImageCounter = 3;
 SDL_Rect roadViewport;
+SDL_Rect gaugesViewport;
 
 Road *road;
+Gauges *gauges;
 
 int main(int argc, char* args[])
 {
@@ -75,11 +78,7 @@ void getInput(){
 	//Todo
 
 
-	source.open("data.txt", ios_base::in);  // open data
-	if (!source)  {                     // if it does not work
-		cerr << "Can't open Data!\n";
-		return;
-	}
+	
 
 	float test;
 	float test2;
@@ -93,8 +92,6 @@ void getInput(){
 		source >> road->dist_MM;
 		source >> road->dist_RR;
 	}
-
-	source.close();
 
 	if (testImage != NULL){
 		SDL_DestroyTexture(testImage);
@@ -118,6 +115,7 @@ void getInput(){
 }
 void tick(){
 	road->tick();
+	//gauges->wheelAngle++;
 }
 
 void render()
@@ -137,6 +135,8 @@ void render()
 	SDL_RenderSetViewport(renderer, &roadViewport);
 	road->draw(renderer);
 
+	SDL_RenderSetViewport(renderer, &gaugesViewport);
+	gauges->draw(renderer);
 
 	SDL_Rect tempViewport = { 0, 0, 280*2, 210*2 };
 	SDL_RenderSetViewport(renderer, &tempViewport);
@@ -164,6 +164,16 @@ bool InitEverything()
 	roadViewport = { 980, 0, 300, 720 };
 
 	Text_init(renderer);
+
+	gauges = new Gauges();
+	gauges->init(renderer);
+	gaugesViewport = { 560, 0, 420, 420 };
+
+	source.open("data.txt", ios_base::in);  // open data
+	if (!source)  {                     // if it does not work
+		cerr << "Can't open Data!\n";
+		return false;
+	}
 	
 
 	return true;
