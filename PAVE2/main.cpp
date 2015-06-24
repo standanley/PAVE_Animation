@@ -29,9 +29,10 @@ int sizeX = 1280;
 int sizeY = 720;
 
 ifstream source;
+int frameCount = 0;
 
 SDL_Window* window;
-SDL_Renderer* renderer; 
+SDL_Renderer* renderer;
 
 SDL_Texture *testImage;
 int testImageCounter = 3;
@@ -62,6 +63,7 @@ void RunGame()
 		tick();
 		render();
 		SDL_Delay(16);
+		frameCount++;
 	}
 }
 bool checkEvents(){
@@ -79,6 +81,10 @@ void getInput(){
 
 	// simulate choppy stream
 	if (rand() % 10 >= 3){
+		//return;
+	}
+
+	if (frameCount % 6 != 0){
 		return;
 	}
 
@@ -119,7 +125,7 @@ void getInput(){
 void tick(){
 	road->tick();
 	//gauges->wheelAngle++;
-	gauges->speed+=.05;
+	if (gauges->speed < 60)	gauges->speed += .05;
 	road->dashSpeed = gauges->speed;
 }
 
@@ -137,7 +143,7 @@ void render()
 	gauges->draw(renderer);
 
 	// video stream
-	SDL_Rect tempViewport = { 0, 0, 280*2, 210*2 };
+	SDL_Rect tempViewport = { 0, 0, 280 * 2, 210 * 2 };
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
 
@@ -172,7 +178,7 @@ bool InitEverything()
 		cerr << "Can't open Data!\n";
 		return false;
 	}
-	
+
 
 	return true;
 }
@@ -188,7 +194,7 @@ bool InitSDL()
 }
 bool CreateWindow()
 {
-	window = SDL_CreateWindow("Server", posX, posY, sizeX, sizeY, 0);
+	window = SDL_CreateWindow("Display", posX, posY, sizeX, sizeY, 0);
 
 	if (window == nullptr)
 	{

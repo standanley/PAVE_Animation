@@ -18,14 +18,23 @@ class Road{
 
 public:
 	float angle = 10;
-	float toMarking_LL = 6;
-	float toMarking_ML = 3;
+
+	float toMarking_LL = -6;
+	float toMarking_ML = -3;
 	float toMarking_MR = 2;
 	float toMarking_RR = 6.5;
 	float dist_LL = 5;
 	float dist_MM = 10;
 	float dist_RR = 20;
+
+	float toMarking_L = -2.5;
+	float toMarking_M = .3;
+	float toMarking_R = 3.8;
+	float dist_L = 10;
+	float dist_R = 15;
+
 	float dashSpeed;
+	bool inLane = false;
 
 	// w and h are the width and height of the viewport used
 	Road(SDL_Renderer *renderer, int w, int h);

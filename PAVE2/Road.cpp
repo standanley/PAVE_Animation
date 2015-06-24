@@ -3,11 +3,14 @@
 #include "Road.h"
 #include <iostream>
 #include <math.h>
+using namespace std;
 
 #define debug(var) cout << #var << " = " << var << "\n"
 
-using namespace std;
 const float PIXELS_PER_METER = 20;
+const float inLaneThreshhold = 20;
+const float changeLaneThreshhold = 10;
+
 int carLength;
 int carWidth;
 
@@ -15,6 +18,9 @@ int w;
 int h;
 int basex;
 int basey;
+
+bool inLane;
+bool changeLane;
 
 SDL_Rect dash;
 SDL_Rect line;
@@ -44,26 +50,69 @@ Road::Road(SDL_Renderer *renderer, int w1, int h1){
 	// Initialize a surface to be used for tilted rectangles, just one pixel big
 	// if you need to change the color a lot, make it white and use color modulation?
 	void *color = new int(0x00ff00ff);
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(color, 1, 1, 32, 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(color, 1, 1, 32, 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff); // may not be portable?
 	carImage = SDL_CreateTextureFromSurface(renderer, surface);
 	free(color);
 	SDL_FreeSurface(surface);
 }
 
 void Road::updateRect(){
-	carL.y = basey - dist_LL*PIXELS_PER_METER;
-	carM.y = basey - dist_MM*PIXELS_PER_METER;
-	carR.y = basey - dist_RR*PIXELS_PER_METER;
+	if (inLane){
+		carL.y = basey - dist_LL*PIXELS_PER_METER;
+		carM.y = basey - dist_MM*PIXELS_PER_METER;
+		carR.y = basey - dist_RR*PIXELS_PER_METER; 
+		carL.x = basex - carL.w / 2 + (toMarking_LL + toMarking_ML) / 2.0*PIXELS_PER_METER;
+		carM.x = basex - carM.w / 2 + (toMarking_ML + toMarking_MR) / 2.0*PIXELS_PER_METER;
+		carR.x = basex - carR.w / 2 + (toMarking_MR + toMarking_RR) / 2.0*PIXELS_PER_METER;
+	}
+	else{
+		carL.y = basey - dist_L*PIXELS_PER_METER;
+		carR.y = basey - dist_R*PIXELS_PER_METER;
+		carL.x = basex - carL.w / 2 + (toMarking_L + toMarking_M) / 2.0*PIXELS_PER_METER;
+		carR.x = basex - carR.w / 2 + (toMarking_M + toMarking_R) / 2.0*PIXELS_PER_METER;
+	}
 }
 
 void Road::tick(){
+	//decide which scenarios are active
+	float inlanescore = toMarking_LL*toMarking_LL +
+		toMarking_ML*toMarking_ML +
+		toMarking_MR*toMarking_MR +
+		toMarking_RR*toMarking_RR +
+		dist_LL*dist_LL +
+		dist_MM*dist_MM +
+		dist_RR*dist_RR;
+	float changelanescore = toMarking_L*toMarking_L +
+		toMarking_R * toMarking_R +
+		dist_L*dist_L +
+		dist_R*dist_R; 
+
+	(inlanescore > inLaneThreshhold) ? inLane = true : inLane = false;
+	(changelanescore > changeLaneThreshhold) ? changeLane = true : changeLane = false;
+
+	if (inLane == false && changeLane == false){
+		// Not supposed to happen
+		cout << "In Lane and On Marking systems both inactive\n";
+		if (inlanescore / inLaneThreshhold > changelanescore / changeLaneThreshhold){
+			cout << "Guessing In Lane\n";
+			inLane = true;
+		}
+		else{
+			cout << "Guessing On Marking\n";
+			changeLane = true;
+		}
+
+	}
+
+	
+
 	Road::updateRect();
 	Road::dashOffset = fmodf(Road::dashOffset + dashSpeed*.1 + dash.h * 2, dash.h * 2) - dash.h * 2;
 }
 
 void Road::drawDashes(SDL_Renderer *renderer, int x){
 	int y = dashOffset;
-	dash.x = x - dash.w/2;
+	dash.x = x - dash.w / 2;
 	while (y < h){
 		dash.y = y;
 		y += dash.h * 2;
@@ -72,36 +121,50 @@ void Road::drawDashes(SDL_Renderer *renderer, int x){
 }
 
 void Road::drawAllLines(SDL_Renderer *renderer){
-	SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-	line.x = basex - toMarking_LL * PIXELS_PER_METER - line.w / 2;
-	SDL_RenderFillRect(renderer, &line);
-	line.x = basex + toMarking_RR * PIXELS_PER_METER - line.w / 2;
-	SDL_RenderFillRect(renderer, &line);
+	if (inLane){
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+		line.x = basex + toMarking_LL * PIXELS_PER_METER - line.w / 2;
+		SDL_RenderFillRect(renderer, &line);
+		line.x = basex + toMarking_RR * PIXELS_PER_METER - line.w / 2;
+		SDL_RenderFillRect(renderer, &line);
 
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-	drawDashes(renderer, basex - toMarking_ML* PIXELS_PER_METER);
-	drawDashes(renderer, basex + toMarking_MR* PIXELS_PER_METER);
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		drawDashes(renderer, basex + toMarking_ML* PIXELS_PER_METER);
+		drawDashes(renderer, basex + toMarking_MR* PIXELS_PER_METER);
+	}
+	else{
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		drawDashes(renderer, basex + toMarking_L* PIXELS_PER_METER);
+		drawDashes(renderer, basex + toMarking_M* PIXELS_PER_METER);
+		drawDashes(renderer, basex + toMarking_R* PIXELS_PER_METER);
+	}
 }
 
 void Road::draw(SDL_Renderer *renderer){
-
-	//SDL_RenderClear(renderer);
-
+	// black road
 	SDL_Rect testRect = { 0, 0, w, h };
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderFillRect(renderer, &testRect);
 
+	drawAllLines(renderer);
+
+	if (inLane){
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+		SDL_RenderFillRect(renderer, &carL);
+		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+		SDL_RenderFillRect(renderer, &carM);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		SDL_RenderFillRect(renderer, &carR);
+	}
+	else{
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+		SDL_RenderFillRect(renderer, &carL);
+		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+		SDL_RenderFillRect(renderer, &carR);
+	}
+	
+	// main car
 	SDL_Rect tempRect = { 0, 0, carWidth, carLength };
 	SDL_RenderCopyEx(renderer, carImage, &tempRect, &carMain, angle, NULL, SDL_FLIP_NONE);
-
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(renderer, &carL);
-	SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-	SDL_RenderFillRect(renderer, &carM);
-	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-	SDL_RenderFillRect(renderer, &carR);
-
-
-	drawAllLines(renderer);
 
 }
