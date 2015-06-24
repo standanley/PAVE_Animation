@@ -77,12 +77,11 @@ bool checkEvents(){
 void getInput(){
 	//Todo
 
-	if (rand() % 10 >= 1){
+	// simulate choppy stream
+	if (rand() % 10 >= 3){
 		return;
 	}
 
-	float test;
-	float test2;
 	if (!source.eof()){
 		source >> road->angle;
 		source >> road->toMarking_LL;
@@ -94,12 +93,12 @@ void getInput(){
 		source >> road->dist_RR;
 	}
 
-	if (testImage != NULL && testImageCounter != 34){
+	if (testImage != NULL){
 		SDL_DestroyTexture(testImage);
 	}
 
 	if (testImageCounter <= 33){
-		// ithink char[45] is enough but i'm playing it safe
+		// i think char[45] is enough but i'm playing it safe
 		char filename[50];
 		sprintf_s(filename, sizeof(filename), "C:\\Users\\Daniel\\Desktop\\TestImages\\img%02d.bmp", testImageCounter);
 		SDL_Surface *temp = SDL_LoadBMP(filename);
@@ -109,6 +108,9 @@ void getInput(){
 		else{
 			testImage = SDL_CreateTextureFromSurface(renderer, temp);
 			testImageCounter += 1;
+			if (testImageCounter == 34){
+				testImageCounter = 3;
+			}
 		}
 		SDL_FreeSurface(temp);
 	}
@@ -128,26 +130,16 @@ void render()
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 	SDL_RenderClear(renderer);
 
-	/*
-	//How to draw text
-	SDL_Rect temp = { 90, 490, 300, 48 };
-	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-	SDL_RenderFillRect(renderer, &temp);
-	char* text = "-123.45:6\0";
-	Text_renderText(renderer, text, 100, 500);
-	*/
-
-
 	SDL_RenderSetViewport(renderer, &roadViewport);
 	road->draw(renderer);
 
 	SDL_RenderSetViewport(renderer, &gaugesViewport);
 	gauges->draw(renderer);
 
+	// video stream
 	SDL_Rect tempViewport = { 0, 0, 280*2, 210*2 };
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
-
 
 	SDL_RenderPresent(renderer);
 }
