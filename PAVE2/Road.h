@@ -34,7 +34,6 @@ public:
 	float dist_R = 15;
 
 	float dashSpeed;
-	bool inLane = false;
 
 	// w and h are the width and height of the viewport used
 	Road(SDL_Renderer *renderer, int w, int h);

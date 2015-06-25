@@ -39,12 +39,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL_gfx\include;C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL_gfx\lib;C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL_gfx\include;C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Daniel\Documents\Visual Studio 2013\SDL_gfx\lib;C:\Users\Daniel\Documents\Visual Studio 2013\SDL2-2.0.3\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -78,10 +78,13 @@
     <ClCompile Include="Gauges.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Road.cpp" />
+    <ClCompile Include="SDL2_gfxPrimitives.c" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Gauges.h" />
+    <ClInclude Include="SDL2_gfxPrimitives_font.h" />
+    <ClInclude Include="SDL2_gfxPrimitives.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Road.h" />
   </ItemGroup>

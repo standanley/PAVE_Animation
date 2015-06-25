@@ -10,6 +10,7 @@ using namespace std;
 const float PIXELS_PER_METER = 20;
 const float inLaneThreshhold = 20;
 const float changeLaneThreshhold = 10;
+const float farLaneThreshhold = 1;
 
 int carLength;
 int carWidth;
@@ -22,11 +23,20 @@ int basey;
 bool inLane;
 bool changeLane;
 
+bool laneToLeft;
+bool laneToRight;
+
 SDL_Rect dash;
 SDL_Rect line;
 
 // A one pixel texture used for the color of the main car (for now)
 SDL_Texture *carImage;
+SDL_Texture *inLaneImage;
+SDL_Rect inLaneDest;
+SDL_Texture *checkX;
+SDL_Rect cookieCutter;
+SDL_Rect ilDest;
+SDL_Rect omDest;
 
 Road::Road(SDL_Renderer *renderer, int w1, int h1){
 	w = w1;
@@ -54,6 +64,32 @@ Road::Road(SDL_Renderer *renderer, int w1, int h1){
 	carImage = SDL_CreateTextureFromSurface(renderer, surface);
 	free(color);
 	SDL_FreeSurface(surface);
+
+
+	SDL_Surface *temp = SDL_LoadBMP("inLane.bmp");
+	if (temp == NULL){
+		cout << "Could not load In Lane vs On Marking image\n";
+		SDL_FreeSurface(temp);
+	}
+	else{
+		inLaneImage = SDL_CreateTextureFromSurface(renderer, temp);
+		SDL_FreeSurface(temp);
+	}
+	inLaneDest = { w / 2 - 288 / 2, 10, 288, 32 };
+
+	temp = SDL_LoadBMP("checkX.bmp");
+	SDL_SetColorKey(temp, SDL_TRUE, SDL_MapRGB(temp->format, 255, 255, 255)); // tells it to use white as the transparent color
+	if (temp == NULL){
+		cout << "Could not load Check and X image\n";
+		SDL_FreeSurface(temp);
+	}
+	else{
+		checkX = SDL_CreateTextureFromSurface(renderer, temp);
+		SDL_FreeSurface(temp);
+	}
+	cookieCutter = {0, 0, 230, 230};
+	ilDest = { w / 2 - 288 / 2 +94, 14, 24, 24};
+	omDest = { w / 2 - 288 / 2 + 252, 14, 24, 24 };
 }
 
 void Road::updateRect(){
@@ -83,6 +119,7 @@ void Road::tick(){
 		dist_MM*dist_MM +
 		dist_RR*dist_RR;
 	float changelanescore = toMarking_L*toMarking_L +
+		toMarking_M*toMarking_M+
 		toMarking_R * toMarking_R +
 		dist_L*dist_L +
 		dist_R*dist_R; 
@@ -104,10 +141,13 @@ void Road::tick(){
 
 	}
 
+	if (inLane){
+		(toMarking_LL < -1 * farLaneThreshhold) ? laneToLeft = true : laneToLeft = false;
+		(toMarking_RR > farLaneThreshhold) ? laneToRight = true : laneToRight = false;
+	}
 	
-
-	Road::updateRect();
-	Road::dashOffset = fmodf(Road::dashOffset + dashSpeed*.1 + dash.h * 2, dash.h * 2) - dash.h * 2;
+	updateRect();
+	dashOffset = fmodf(Road::dashOffset + dashSpeed*.1 + dash.h * 2, dash.h * 2) - dash.h * 2;
 }
 
 void Road::drawDashes(SDL_Renderer *renderer, int x){
@@ -122,15 +162,31 @@ void Road::drawDashes(SDL_Renderer *renderer, int x){
 
 void Road::drawAllLines(SDL_Renderer *renderer){
 	if (inLane){
-		SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-		line.x = basex + toMarking_LL * PIXELS_PER_METER - line.w / 2;
-		SDL_RenderFillRect(renderer, &line);
-		line.x = basex + toMarking_RR * PIXELS_PER_METER - line.w / 2;
-		SDL_RenderFillRect(renderer, &line);
+		if (laneToLeft){
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+			line.x = basex + toMarking_LL * PIXELS_PER_METER - line.w / 2;
+			SDL_RenderFillRect(renderer, &line);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			drawDashes(renderer, basex + toMarking_ML* PIXELS_PER_METER);
+		}
+		else{
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+			line.x = basex + toMarking_ML * PIXELS_PER_METER - line.w / 2;
+			SDL_RenderFillRect(renderer, &line);
+		}
 
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		drawDashes(renderer, basex + toMarking_ML* PIXELS_PER_METER);
-		drawDashes(renderer, basex + toMarking_MR* PIXELS_PER_METER);
+		if (laneToRight){
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			drawDashes(renderer, basex + toMarking_MR* PIXELS_PER_METER);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+			line.x = basex + toMarking_RR * PIXELS_PER_METER - line.w / 2;
+			SDL_RenderFillRect(renderer, &line);
+		}
+		else{
+			SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+			line.x = basex + toMarking_MR * PIXELS_PER_METER - line.w / 2;
+			SDL_RenderFillRect(renderer, &line);
+		}
 	}
 	else{
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -166,5 +222,13 @@ void Road::draw(SDL_Renderer *renderer){
 	// main car
 	SDL_Rect tempRect = { 0, 0, carWidth, carLength };
 	SDL_RenderCopyEx(renderer, carImage, &tempRect, &carMain, angle, NULL, SDL_FLIP_NONE);
+
+
+	changeLane = false;
+	SDL_RenderCopy(renderer, inLaneImage, NULL, &inLaneDest);
+	(inLane) ? cookieCutter.x = 0 : cookieCutter.x = 282;
+	SDL_RenderCopy(renderer, checkX, &cookieCutter, &ilDest);
+	(changeLane) ? cookieCutter.x = 0 : cookieCutter.x = 282;
+	SDL_RenderCopy(renderer, checkX, &cookieCutter, &omDest);
 
 }
