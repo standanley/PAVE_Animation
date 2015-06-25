@@ -6,6 +6,7 @@
 #include "Gauges.h"
 #include <fstream>
 #include <stdlib.h>
+#include "SDL2_gfxPrimitives.h"
 
 using namespace std;
 
@@ -146,6 +147,9 @@ void render()
 	SDL_Rect tempViewport = { 0, 0, 280 * 2, 210 * 2 };
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
+
+	//testing SDL2_gfx
+	//rectangleRGBA(renderer, 50, 50, 100, 100, 255, 127, 0, 255);
 
 	SDL_RenderPresent(renderer);
 }

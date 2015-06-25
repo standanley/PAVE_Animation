@@ -79,12 +79,14 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Road.cpp" />
     <ClCompile Include="SDL2_gfxPrimitives.c" />
+    <ClCompile Include="SDL2_rotozoom.c" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Gauges.h" />
     <ClInclude Include="SDL2_gfxPrimitives_font.h" />
     <ClInclude Include="SDL2_gfxPrimitives.h" />
+    <ClInclude Include="SDL2_rotozoom.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Road.h" />
   </ItemGroup>
