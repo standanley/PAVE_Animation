@@ -4,6 +4,7 @@
 #include "Road.h"
 #include "Text.h"
 #include "Gauges.h"
+#include "Prediction.h"
 #include <fstream>
 #include <stdlib.h>
 #include "SDL2_gfxPrimitives.h"
@@ -42,6 +43,7 @@ SDL_Rect gaugesViewport;
 
 Road *road;
 Gauges *gauges;
+Prediction *prediction;
 
 int main(int argc, char* args[])
 {
@@ -63,7 +65,7 @@ void RunGame()
 		getInput();
 		tick();
 		render();
-		SDL_Delay(16);
+		SDL_Delay(160);
 		frameCount++;
 	}
 }
@@ -148,12 +150,10 @@ void render()
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
 
-	//testing SDL2_gfx
-	//rectangleRGBA(renderer, 50, 50, 100, 100, 255, 127, 0, 255);
+	prediction->draw(renderer);
 
 	SDL_RenderPresent(renderer);
 }
-
 
 bool InitEverything()
 {
@@ -182,6 +182,17 @@ bool InitEverything()
 		cerr << "Can't open Data!\n";
 		return false;
 	}
+
+	// temporarily
+	prediction = new Prediction();
+	const int numPositions = 5;
+	Point *positions = (Point*)malloc(sizeof(Point) * numPositions);
+	positions[0] = { 0, 0 };
+	positions[1] = { 0, 1 };
+	positions[2] = { 0, 2 };
+	positions[3] = { .3, 2.8 };
+	positions[4] = { 1, 3.5 };
+	prediction->updateSurface(positions, numPositions);
 
 
 	return true;
