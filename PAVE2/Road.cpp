@@ -1,13 +1,15 @@
 /* Holds data about the road drawing, including pretty much everything coming out of the NN*/
 #include <SDL.h>
 #include "Road.h"
+#include "Prediction.h"
 #include <iostream>
 #include <math.h>
 using namespace std;
 
 #define debug(var) cout << #var << " = " << var << "\n"
 
-const float PIXELS_PER_METER = 20;
+const float Road::PIXELS_PER_METER = 20;
+
 const float inLaneThreshhold = 20;
 const float changeLaneThreshhold = 10;
 const float farLaneThreshhold = 1;
@@ -218,13 +220,15 @@ void Road::draw(SDL_Renderer *renderer){
 		SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
 		SDL_RenderFillRect(renderer, &carR);
 	}
+
+	Prediction::drawTopDown(renderer, this);
 	
 	// main car
 	SDL_Rect tempRect = { 0, 0, carWidth, carLength };
 	SDL_RenderCopyEx(renderer, carImage, &tempRect, &carMain, angle, NULL, SDL_FLIP_NONE);
 
 
-	changeLane = false;
+	changeLane = false; // not sure why this is here
 	SDL_RenderCopy(renderer, inLaneImage, NULL, &inLaneDest);
 	(inLane) ? cookieCutter.x = 0 : cookieCutter.x = 282;
 	SDL_RenderCopy(renderer, checkX, &cookieCutter, &ilDest);

@@ -11,6 +11,10 @@ SDL_Texture *speedometer;
 SDL_Texture *needle;
 SDL_Texture *speedText;
 
+Gauges::Gauges(SDL_Renderer *renderer){
+	init(renderer); //ignores return value for now
+}
+
 bool Gauges::init(SDL_Renderer *renderer){
 	bool success = true;
 	SDL_Surface *temp = SDL_LoadBMP("steeringWheel2.bmp");

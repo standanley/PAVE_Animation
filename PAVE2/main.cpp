@@ -9,6 +9,9 @@
 #include <stdlib.h>
 #include "SDL2_gfxPrimitives.h"
 
+
+#define debug(var) cout << #var << " = " << var << "\n"
+
 using namespace std;
 
 bool checkEvents();
@@ -31,6 +34,7 @@ int sizeX = 1280;
 int sizeY = 720;
 
 ifstream source;
+int lastLocation = 0;
 int frameCount = 0;
 
 SDL_Window* window;
@@ -81,26 +85,59 @@ bool checkEvents(){
 
 void getInput(){
 	//Todo
+	// does not have image or predicted path
+	float *variables[17] = { &road->angle,
+		&road->toMarking_LL,
+		&road->toMarking_ML,
+		&road->toMarking_MR,
+		&road->toMarking_RR,
+		&road->dist_LL,
+		&road->dist_MM,
+		&road->dist_RR,
+		&road->toMarking_L,
+		&road->toMarking_M,
+		&road->toMarking_R,
+		&road->dist_L,
+		&road->dist_R, 
+		&gauges->speed,
+		&gauges->wheelAngle,
+		&gauges->gas,
+		&gauges->brake};
+
+	string mystring;
+	while ((bool)getline(source, mystring)){
+		int location = source.tellg();
+		if (location != -1){
+			// got a line
+			const char *line = mystring.c_str();
+			int num =0;
+			float value=0;
+			sscanf_s(line, "%d %f", &num, &value);
+			*variables[num] = value;
+
+			lastLocation = location;
+		}
+	}
+	source.clear();
+	source.seekg(lastLocation, source.beg);
+
+
+
+
+
 
 	// simulate choppy stream
 	if (rand() % 10 >= 3){
 		//return;
 	}
 
+	// update every sixth frame
 	if (frameCount % 6 != 0){
 		return;
 	}
 
-	if (!source.eof()){
-		source >> road->angle;
-		source >> road->toMarking_LL;
-		source >> road->toMarking_ML;
-		source >> road->toMarking_MR;
-		source >> road->toMarking_RR;
-		source >> road->dist_LL;
-		source >> road->dist_MM;
-		source >> road->dist_RR;
-	}
+
+	// Video feed
 
 	if (testImage != NULL){
 		SDL_DestroyTexture(testImage);
@@ -150,7 +187,7 @@ void render()
 	SDL_RenderSetViewport(renderer, &tempViewport);
 	SDL_RenderCopy(renderer, testImage, NULL, NULL);
 
-	prediction->draw(renderer);
+	Prediction::drawPerspective(renderer);
 
 	SDL_RenderPresent(renderer);
 }
@@ -173,8 +210,8 @@ bool InitEverything()
 
 	Text_init(renderer);
 
-	gauges = new Gauges();
-	gauges->init(renderer);
+	gauges = new Gauges(renderer);
+	//gauges->init(renderer);
 	gaugesViewport = { 560, 0, 420, 420 };
 
 	source.open("data.txt", ios_base::in);  // open data
@@ -184,15 +221,18 @@ bool InitEverything()
 	}
 
 	// temporarily
-	prediction = new Prediction();
-	const int numPositions = 5;
+	//prediction = new Prediction();
+	const int numPositions = 8;
 	Point *positions = (Point*)malloc(sizeof(Point) * numPositions);
 	positions[0] = { 0, 0 };
 	positions[1] = { 0, 1 };
 	positions[2] = { 0, 2 };
 	positions[3] = { .3, 2.8 };
 	positions[4] = { 1, 3.5 };
-	prediction->updateSurface(positions, numPositions);
+	positions[5] = { 1.5, 4.2 };
+	positions[6] = { 1.6, 4.8 };
+	positions[7] = { 1.6, 6 };
+	Prediction::updateSurface(positions, numPositions);
 
 
 	return true;

@@ -1,12 +1,13 @@
 // ifndef todo
+#ifndef ROAD_DEFINED
+#define ROAD_DEFINED
 
 /* This class represents the top-down drawing of lanes and cars. Most of the coordinates are
-   based off the bottom, where the main car is, because the height depends on the window size.
-   Specifically, Road.cpp has constants for the x/y offset of the bottom center of everything*/
+   based off the bottom, where the main car is, because the height depends on the window size.*/
 
 class Road{
 
-	SDL_Rect carMain;
+	
 	SDL_Rect carL;
 	SDL_Rect carM;
 	SDL_Rect carR;
@@ -17,6 +18,9 @@ class Road{
 	void Road::drawAllLines(SDL_Renderer *renderer);
 
 public:
+	const static float PIXELS_PER_METER;
+	SDL_Rect carMain;
+
 	float angle = 10;
 
 	float toMarking_LL = -6;
@@ -33,15 +37,15 @@ public:
 	float dist_L = 10;
 	float dist_R = 15;
 
-	float dashSpeed;
+	float dashSpeed; // the car's forward speed
 
 	// w and h are the width and height of the viewport used
 	Road(SDL_Renderer *renderer, int w, int h);
-
-	float carPosition = 0; // just for testing
 
 	void tick();
 
 	void draw(SDL_Renderer *renderer);
 
 };
+
+#endif
