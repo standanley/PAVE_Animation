@@ -41,7 +41,7 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 
 SDL_Texture *testImage;
-int testImageCounter = 3;
+int testImageCounter = 755;
 SDL_Rect roadViewport;
 SDL_Rect gaugesViewport;
 
@@ -69,7 +69,7 @@ void RunGame()
 		getInput();
 		tick();
 		render();
-		SDL_Delay(160);
+		SDL_Delay(16);
 		frameCount++;
 	}
 }
@@ -85,7 +85,7 @@ bool checkEvents(){
 
 void getInput(){
 	//Todo
-	// does not have image or predicted path
+	// does not read in image or predicted path
 	float *variables[17] = { &road->angle,
 		&road->toMarking_LL,
 		&road->toMarking_ML,
@@ -121,20 +121,12 @@ void getInput(){
 	source.clear();
 	source.seekg(lastLocation, source.beg);
 
-
-
-
-
-
-	// simulate choppy stream
-	if (rand() % 10 >= 3){
-		//return;
-	}
-
-	// update every sixth frame
+	/*
+	// update every sixth frame, eg. you are playing back a finished file
 	if (frameCount % 6 != 0){
 		return;
 	}
+	*/
 
 
 	// Video feed
@@ -143,19 +135,20 @@ void getInput(){
 		SDL_DestroyTexture(testImage);
 	}
 
-	if (testImageCounter <= 33){
+	if (testImageCounter <= 854){
 		// i think char[45] is enough but i'm playing it safe
-		char filename[50];
-		sprintf_s(filename, sizeof(filename), "C:\\Users\\Daniel\\Desktop\\TestImages\\img%02d.bmp", testImageCounter);
+		char filename[100];
+		sprintf_s(filename, sizeof(filename), "C:\\Users\\Daniel\\Desktop\\testimages2\\img_%06d.bmp", testImageCounter);
+		cout << filename << endl;
 		SDL_Surface *temp = SDL_LoadBMP(filename);
 		if (temp == NULL){
-			cout << "Could not load image";
+			cout << "Could not load image" << endl;
 		}
 		else{
 			testImage = SDL_CreateTextureFromSurface(renderer, temp);
 			testImageCounter += 1;
-			if (testImageCounter == 34){
-				testImageCounter = 3;
+			if (testImageCounter == 855){
+				testImageCounter = 755;
 			}
 		}
 		SDL_FreeSurface(temp);
